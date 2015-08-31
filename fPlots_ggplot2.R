@@ -150,7 +150,14 @@ plot.facets.all.output = function(out, fit, w=850, h=1100, type='png', load.geno
   
   if(type == 'pdf'){pdf(width = 8.854167, height=11.458333, file=plotname)}
   if(type == 'png'){png(width = w, height=h, file=plotname, units='px')}
-  grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf, ncol=1, nrow=6)
+
+  if(title != ''){grid.arrange(grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf,
+                                            ncol=1,
+                                            nrow=6,
+                                            top=textGrob(title))}
+  if(title == ''){grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf,
+                               ncol=1,
+                               nrow=6)}
   dev.off()
 }
 
