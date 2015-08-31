@@ -1,56 +1,6 @@
 require(ggplot2)
+require(gridExtra)
 
-############################################################################################################################################
-############################################################################################################################################
-# Multiple plot function from http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)
-#
-# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
-# - cols:   Number of columns in layout
-# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
-#
-# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-# then plot 1 will go in the upper left, 2 will go in the upper right, and
-# 3 will go all the way across the bottom.
-
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  library(grid)
-  
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
-  
-  numPlots = length(plots)
-  
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                     ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-  
-  if (numPlots==1) {
-    print(plots[[1]])
-    
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-    #grid.text("MAIN TITLE", vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
-    
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-      
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
-
-############################################################################################################################################
-############################################################################################################################################
 
 copy.number.log.ratio = function(mat, cncf, mid, dipLogR, main='', col.1="#0080FF", col.2="#4CC4FF"){
     
@@ -64,7 +14,7 @@ copy.number.log.ratio = function(mat, cncf, mid, dipLogR, main='', col.1="#0080F
     ylim(-3,3) +
     ylab('Log-Ratio') +
     geom_hline(yintercept = dipLogR, color = 'white', size = 1) + 
-      geom_point(aes(x=chr.maploc,y=cnlr.median),size=.8,colour='red3') +
+    geom_point(aes(x=chr.maploc,y=cnlr.median),size=.8,colour='red3') +
     theme(axis.text.x  = element_text(angle=90, vjust=0.5, size=8),
           axis.text.y = element_text(angle=90, vjust=0.5, size=8)) +
     ggtitle(main)
@@ -151,7 +101,7 @@ get.cumlative.chr.maploc = function(mat, load.genome=FALSE){
   list(mat=mat, mid=mid)
 }
 
-get.gene.pos = function(hugo.symbol,my.path='/ifs/work/taylorb/donoghum/reference_sequences/Homo_sapiens.GRCh37.75.canonical_exons.bed',load.genome=FALSE){
+get.gene.pos = function(hugo.symbol,my.path='~/work/reference_sequences/Homo_sapiens.GRCh37.75.canonical_exons.bed',load.genome=FALSE){
   
   if(load.genome){
     require(BSgenome.Hsapiens.UCSC.hg19)
@@ -171,7 +121,7 @@ get.gene.pos = function(hugo.symbol,my.path='/ifs/work/taylorb/donoghum/referenc
   gene.start = min(start(genes[which(mcols(genes)$name == hugo.symbol)]))
   gene.end = max(end(genes[which(mcols(genes)$name == hugo.symbol)]))
   mid.point = gene.start + ((gene.end - gene.start)/2) 
-  chrom = seqnames(genes[which(mcols(genes)$name == 'AKT1')])[1]  
+  chrom = seqnames(genes[which(mcols(genes)$name == hugo.symbol)])[1]  
   mid.point = cum.chrom.lengths[as.integer(chrom)-1] + mid.point
   
   mid.point
@@ -197,11 +147,10 @@ plot.facets.all.output = function(out, fit, w=850, h=1100, type='png', load.geno
   cfcncf = cellular.fraction(mat, cncf, mid, 'cncf') #; cfcncf
   icnem = integer.copy.number(mat, cncf, mid, 'em') #; icnem
   icncncf = integer.copy.number(mat, cncf, mid, 'cncf') #; icncncf
-    
-  layout = matrix(c(1,2,3,4,5,6), nrow = 6, byrow = TRUE)
-  if(type == 'pdf'){pdf(width = w, height=h, file=plotname, units='px')}
+  
+  if(type == 'pdf'){pdf(width = 8.854167, height=11.458333, file=plotname)}
   if(type == 'png'){png(width = w, height=h, file=plotname, units='px')}
-  multiplot(plotlist = list(cnlr, valor, cfem, icnem, cfcncf, icncncf), layout = layout)
+  grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf, ncol=1, nrow=6)
   dev.off()
 }
 
@@ -222,6 +171,7 @@ close.up = function(out, fit, chrom.range, method=NULL, gene.pos=NULL, main=''){
   mat = mat[mat$chrom %in% chrom.range,]
   cncf = cncf[cncf$chrom %in% chrom.range,]
   mid = mid[chrom.range]
+  if(!is.null(gene.pos)){gene.pos = get.gene.pos(gene.pos)}
   
   cnlr = copy.number.log.ratio(mat, cncf, mid, dipLogR, main=main)
   valor = var.allele.log.odds.ratio(mat, cncf, mid)
@@ -241,3 +191,54 @@ close.up = function(out, fit, chrom.range, method=NULL, gene.pos=NULL, main=''){
   list(cnlr=cnlr,valor=valor,cfem=cfem,cfcncf=cfcncf,icnem=icnem,icncncf=icncncf)
 }
 
+
+############################################################################################################################################
+############################################################################################################################################
+
+#Example Plot
+akt1.close.ups = function(chrom.range = 13:15, gene.pos ='AKT1', w=11.458333, h=7.291667, plotname='proj_5513_wxs.pdf',type='pdf',method=NULL){
+
+  load('~/work//AKT1_UCEC//my_r_003//s_TS01_T/facets__Proj_5513__s_TS01_T__s_TS01_N__cval__100_.Rdata')
+  ts01 = close.up(out, fit, chrom.range, method, gene.pos, main='TS01')
+  
+  load('~/work//AKT1_UCEC//my_r_003//s_TS02_T/facets__Proj_5513__s_TS02_T__s_TS02_N__cval__100_.Rdata')
+  ts02 = close.up(out, fit, chrom.range, method, gene.pos, main='TS02')
+  
+  load('~/work//AKT1_UCEC//my_r_003//s_TS03_T/facets__Proj_5513__s_TS03_T__s_TS03_N__cval__100_.Rdata')
+  ts03 = close.up(out, fit, chrom.range, method, gene.pos, main='TS03')
+
+  load('~/work//AKT1_UCEC//my_r_003//s_TS04_T/facets__Proj_5513__s_TS04_T__s_TS04_N__cval__100_.Rdata')
+  ts04 = close.up(out, fit, chrom.range, method, gene.pos, main='TS04')
+  
+  load('~/work//AKT1_UCEC//my_r_003//s_TS05_T/facets__Proj_5513__s_TS05_T__s_TS05_N__cval__100_.Rdata')
+  ts05 = close.up(out, fit, chrom.range, method, gene.pos, main='TS05')
+  
+  layout = matrix(1:15, nrow = 3)
+  if(type == 'pdf'){pdf(width = w, height=h, file=plotname)}
+  if(type == 'png'){png(width = w, height=h, file=plotname, units='px')}
+  grid.arrange(ts01$cnlr, ts02$cnlr, ts03$cnlr, ts04$cnlr, ts05$cnlr,
+               ts01$valor, ts02$valor, ts03$valor,  ts04$valor, ts05$valor,
+               ts01$icncncf, ts02$icncncf, ts03$icncncf, ts04$icncncf, ts05$icncncf, 
+               ncol=5, nrow=3)
+  dev.off()
+  
+}
+
+#Example Plots
+akt1.wxs = function(){
+  
+  load('~/work//AKT1_UCEC//my_r_003//s_TS01_T/facets__Proj_5513__s_TS01_T__s_TS01_N__cval__100_.Rdata')
+  plot.facets.all.output(out, fit), w = 850, h=1100, type='png', main='TS01 | cval: 100', plotname='TS01_cval_100.png')
+  
+  load('~/work//AKT1_UCEC//my_r_003//s_TS02_T/facets__Proj_5513__s_TS02_T__s_TS02_N__cval__100_.Rdata')
+  plot.facets.all.output(out, fit, w = 850, h=1100, type='png', main='TS02 | cval: 100', plotname='TS02_cval_100.png')
+  
+  load('~/work//AKT1_UCEC//my_r_003//s_TS03_T/facets__Proj_5513__s_TS03_T__s_TS03_N__cval__100_.Rdata')
+  plot.facets.all.output(out, fit, w = 850, h=1100, type='png', main='TS03 | cval: 100', plotname='TS03_cval_100.png')
+  
+  load('~/work//AKT1_UCEC//my_r_003//s_TS04_T/facets__Proj_5513__s_TS04_T__s_TS04_N__cval__100_.Rdata')
+  plot.facets.all.output(out, fit, w = 850, h=1100, type='png', main='TS04 | cval: 100', plotname='TS04_cval_100.png')
+  
+  load('~/work//AKT1_UCEC//my_r_003//s_TS05_T/facets__Proj_5513__s_TS05_T__s_TS05_N__cval__100_.Rdata')
+  plot.facets.all.output(out, fit, w = 850, h=1100, type='png', main='TS05 | cval: 100', plotname='TS05_cval_100.png')
+}
