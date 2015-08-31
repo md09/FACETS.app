@@ -151,10 +151,11 @@ plot.facets.all.output = function(out, fit, w=850, h=1100, type='png', load.geno
   if(type == 'pdf'){pdf(width = 8.854167, height=11.458333, file=plotname)}
   if(type == 'png'){png(width = w, height=h, file=plotname, units='px')}
 
-  if(title != ''){grid.arrange(grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf,
-                                            ncol=1,
-                                            nrow=6,
-                                            top=textGrob(title))}
+  if(title != ''){grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf,
+                               ncol=1,
+                               nrow=6,
+                               top=textGrob(title))}
+  
   if(title == ''){grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf,
                                ncol=1,
                                nrow=6)}
@@ -207,7 +208,7 @@ akt1.close.ups = function(chrom.range = 13:15, gene.pos ='AKT1', w=11.458333, h=
 
   load('~/work//AKT1_UCEC//my_r_003//s_TS01_T/facets__Proj_5513__s_TS01_T__s_TS01_N__cval__100_.Rdata')
   ts01 = close.up(out, fit, chrom.range, method, gene.pos, main='TS01')
-  
+
   load('~/work//AKT1_UCEC//my_r_003//s_TS02_T/facets__Proj_5513__s_TS02_T__s_TS02_N__cval__100_.Rdata')
   ts02 = close.up(out, fit, chrom.range, method, gene.pos, main='TS02')
   
