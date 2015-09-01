@@ -1,4 +1,6 @@
+require(Cairo)
 require(ggplot2)
+require(grid)
 require(gridExtra)
 
 
@@ -13,7 +15,7 @@ copy.number.log.ratio = function(mat, cncf, mid, dipLogR, main='', col.1="#0080F
     xlab('') +
     ylim(-3,3) +
     ylab('Log-Ratio') +
-    geom_hline(yintercept = dipLogR, color = 'white', size = 1) + 
+    geom_hline(yintercept = dipLogR, color = 'sandybrown', size = 1) + 
     geom_point(aes(x=chr.maploc,y=cnlr.median),size=.8,colour='red3') +
     theme(axis.text.x  = element_text(angle=90, vjust=0.5, size=8),
           axis.text.y = element_text(angle=90, vjust=0.5, size=8)) +
@@ -101,7 +103,7 @@ get.cumlative.chr.maploc = function(mat, load.genome=FALSE){
   list(mat=mat, mid=mid)
 }
 
-get.gene.pos = function(hugo.symbol,my.path='~/work/reference_sequences/Homo_sapiens.GRCh37.75.canonical_exons.bed',load.genome=FALSE){
+get.gene.pos = function(hugo.symbol,my.path='/ifs/work/taylorlab/changmt/resources/human/Homo_sapiens.GRCh37.75.canonical_exons.bed',load.genome=FALSE){
   
   if(load.genome){
     require(BSgenome.Hsapiens.UCSC.hg19)
@@ -148,15 +150,15 @@ plot.facets.all.output = function(out, fit, w=850, h=1100, type='png', load.geno
   icnem = integer.copy.number(mat, cncf, mid, 'em') #; icnem
   icncncf = integer.copy.number(mat, cncf, mid, 'cncf') #; icncncf
   
-  if(type == 'pdf'){pdf(width = 8.854167, height=11.458333, file=plotname)}
-  if(type == 'png'){png(width = w, height=h, file=plotname, units='px')}
+  if(type == 'pdf'){plotname = paste(plotname, '.pdf', sep=''); CairoPDF(width = 8.854167, height=11.458333, file=plotname)}
+  if(type == 'png'){plotname = paste(plotname, '.png', sep=''); CairoPNG(width = w, height=h, file=plotname, units='px')}
 
-  if(title != ''){grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf,
+  if(main != ''){grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf,
                                ncol=1,
                                nrow=6,
                                top=textGrob(title))}
   
-  if(title == ''){grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf,
+  if(main == ''){grid.arrange(cnlr, valor, cfem, icnem, cfcncf, icncncf,
                                ncol=1,
                                nrow=6)}
   dev.off()
@@ -222,8 +224,8 @@ akt1.close.ups = function(chrom.range = 13:15, gene.pos ='AKT1', w=11.458333, h=
   ts05 = close.up(out, fit, chrom.range, method, gene.pos, main='TS05')
   
   layout = matrix(1:15, nrow = 3)
-  if(type == 'pdf'){pdf(width = w, height=h, file=plotname)}
-  if(type == 'png'){png(width = w, height=h, file=plotname, units='px')}
+  if(type == 'pdf'){CairoPDF(width = w, height=h, file=plotname)}
+  if(type == 'png'){CairoPNG(width = w, height=h, file=plotname, units='px')}
   grid.arrange(ts01$cnlr, ts02$cnlr, ts03$cnlr, ts04$cnlr, ts05$cnlr,
                ts01$valor, ts02$valor, ts03$valor,  ts04$valor, ts05$valor,
                ts01$icncncf, ts02$icncncf, ts03$icncncf, ts04$icncncf, ts05$icncncf, 
@@ -236,7 +238,7 @@ akt1.close.ups = function(chrom.range = 13:15, gene.pos ='AKT1', w=11.458333, h=
 akt1.wxs = function(){
   
   load('~/work//AKT1_UCEC//my_r_003//s_TS01_T/facets__Proj_5513__s_TS01_T__s_TS01_N__cval__100_.Rdata')
-  plot.facets.all.output(out, fit), w = 850, h=1100, type='png', main='TS01 | cval: 100', plotname='TS01_cval_100.png')
+  plot.facets.all.output(out, fit, w = 850, h=1100, type='png', main='TS01 | cval: 100', plotname='TS01_cval_100.png')
   
   load('~/work//AKT1_UCEC//my_r_003//s_TS02_T/facets__Proj_5513__s_TS02_T__s_TS02_N__cval__100_.Rdata')
   plot.facets.all.output(out, fit, w = 850, h=1100, type='png', main='TS02 | cval: 100', plotname='TS02_cval_100.png')

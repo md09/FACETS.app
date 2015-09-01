@@ -16,7 +16,7 @@ getSDIR <- function(){
 }
 
 source(file.path(getSDIR(),"funcs.R"))
-source(file.path(getSDIR(),"fPlots.R"))
+source(file.path(getSDIR(),"fPlots_ggplot2.R"))
 source(file.path(getSDIR(),"nds.R"))
 
 buildData=installed.packages()["facets",]
@@ -109,9 +109,10 @@ cat("# loglik =",fit$loglik,"\n",file=ff,append=T)
 write.xls(cbind(out$IGV[,1:4],fit$cncf[,2:ncol(fit$cncf)]),
     cc(TAG,"cncf.txt"),row.names=F)
 
-CairoPNG(file=cc(TAG,"CNCF.png"),height=1100,width=850)
+#CairoPNG(file=cc(TAG,"CNCF.png"),height=1100,width=850)
 #plotSampleCNCF(out$jointseg,out$out,fit)
-plotSampleCNCF.custom(out$jointseg,out$out,fit,
-        main=paste(projectName,"[",tumorName,normalName,"]","cval =",CVAL))
-
-dev.off()
+#plotSampleCNCF.custom(out$jointseg,out$out,fit,
+#        main=paste(projectName,"[",tumorName,normalName,"]","cval =",CVAL))
+#my.main = paste(projectName,"[",tumorName,normalName,"]","cval =",CVAL)
+plot.facets.all.output(out, fit, main='',plotname=TAG)
+#dev.off()
